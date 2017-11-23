@@ -1,8 +1,7 @@
 // configuration
 'use strict';
 
-var dataCacheName = '3Ti';
-var cacheName = '3ti-work';
+var CACHE = '3ti-work';
 var filesToCache = [
 	'/',
 	'/index.html',
@@ -16,35 +15,56 @@ var filesToCache = [
 	'/js/jqBootstrapValidation.js'
 ];
 
-self.addEventListener('install', function(e) {
-	console.log('[ServiceWorker] Install');
-	e.waitUntil(
-		caches.open(cacheName).then(function(cache) {
-			console.log('[ServiceWorker] Caching app shell');
-			return cache.addAll(filesToCache);
-		})
-	);
-});
+// install static assets
+function installStaticFiles() {
 
-// self.addEventListener('activate', function(e) {
-	// console.log('[ServiceWorker] Activate');
-	// e.waitUntil(
-		// caches.keys().then(function(keyList) {
-			// return Promise.all(keyList.map(function(key) {
-				// if(key !== cacheName && key !== dataCacheName) {
-					// console.log('[ServiceWorker] Removing old cache', key);
-					// return caches.delete(key);
-				// }
-			// }			
-			// ));
-		// })
-	// );
-	// return self.clients.claim();
-// });
+  return caches.open(CACHE)
+    .then(cache => {
+
+      // cache desirable files
+      cache.addAll(installFilesDesirable);
+
+      // cache essential files
+      return cache.addAll(installFilesEssential);
+
+    });
+
+}
+
+// clear old caches
+function clearOldCaches() {
+
+  return caches.keys()
+    .then(keylist => {
+
+      return Promise.all(
+        keylist
+          .filter(key => key !== CACHE)
+          .map(key => caches.delete(key))
+      );
+
+    });
+
+}
+
+// application installation
+self.addEventListener('install', event => {
+
+  console.log('service worker: install');
+
+  // cache core files
+  event.waitUntil(
+    installStaticFiles()
+    .then(() => self.skipWaiting())
+  );
+
+});
 
 // application activated
 self.addEventListener('activate', event => {
-  console.log('[ServiceWorker] Activate');
+
+  console.log('service worker: activate');
+
 	// delete old caches
   event.waitUntil(
     clearOldCaches()
@@ -53,38 +73,44 @@ self.addEventListener('activate', event => {
 
 });
 
-// clear old caches
-function clearOldCaches() {
+// application fetch network data
+self.addEventListener('fetch', event => {
 
-  return caches.keys()
-    .then(keylist => {
-      return Promise.all(
-        keylist
-          .filter(key => key !== cacheName)
-          .map(key => caches.delete(key))
-      );
-    });
+  // abandon non-GET requests
+  if (event.request.method !== 'GET') return;
 
-}
+  let url = event.request.url;
 
+  event.respondWith(
 
-self.addEventListener('fetch', function(e) {
-	console.log('[Service Worker] Fetch', e.request.url);
-	var dataUrl = 'https://query.yahooapis.com/v1/public/yql';
-	if(e.request.url.indexOf(dataUrl) > -1) {		
-		e.respondWith(
-			caches.open(dataCacheName).then(function(cache) {
-				return fetch(e.request).then(function(response) {
-					cache.put(e.request.url, response.clone());
-					return response;
-				});
-			})
-		);
-	} else {
-		e.respondWith(
-			caches.match(e.request).then(function(response) {
-				return response || fetch(e.request);
-			})
-		);
-	}
+    caches.open(CACHE)
+      .then(cache => {
+
+        return cache.match(event.request)
+          .then(response => {
+
+            if (response) {
+              // return cached file
+              console.log('cache fetch: ' + url);
+              return response;
+            }
+
+            // make network request
+            return fetch(event.request)
+              .then(newreq => {
+
+                console.log('network fetch: ' + url);
+                if (newreq.ok) cache.put(event.request, newreq.clone());
+                return newreq;
+
+              })
+              // app is offline
+              .catch(() => offlineAsset(url));
+
+          });
+
+      })
+
+  );
+
 });
