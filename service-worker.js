@@ -1,3 +1,6 @@
+// configuration
+'use strict';
+
 var dataCacheName = '3Ti';
 var cacheName = '3ti-work';
 var filesToCache = [
