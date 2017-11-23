@@ -1,21 +1,17 @@
 // configuration
-'use strict';
+`use strict`;
 
 const
-  version = '3Ti',
+  version = '1.0.0',
   CACHE = version + '::PWAsite',
   offlineURL = '/offline/',
   installFilesEssential = [
     '/',
-	'/index.html',
-	'/css/agency.min.css',
-	'/css/agency.css',
-	'/img/map-image.png',
-	'/img/header-bg.png',
-	'/js/agency.js',
-	'/js/agency.min.js',
-	'/js/contact_me.js',
-	'/js/jqBootstrapValidation.js'
+    '/manifest.json',
+    '/css/styles.css',
+    '/js/main.js',
+    '/js/offlinepage.js',
+    '/images/logo/logo152.png'
   ].concat(offlineURL),
   installFilesDesirable = [
     '/favicon.ico',
@@ -70,6 +66,7 @@ self.addEventListener('install', event => {
 
 });
 
+
 // application activated
 self.addEventListener('activate', event => {
 
@@ -82,6 +79,41 @@ self.addEventListener('activate', event => {
 	);
 
 });
+
+
+// is image URL?
+let iExt = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'].map(f => '.' + f);
+function isImage(url) {
+
+  return iExt.reduce((ret, ext) => ret || url.endsWith(ext), false);
+
+}
+
+
+// return offline asset
+function offlineAsset(url) {
+
+  if (isImage(url)) {
+
+    // return image
+    return new Response(
+      '<svg role="img" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"><title>offline</title><path d="M0 0h400v300H0z" fill="#eee" /><text x="200" y="150" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="50" fill="#ccc">offline</text></svg>',
+      { headers: {
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control': 'no-store'
+      }}
+    );
+
+  }
+  else {
+
+    // return page
+    return caches.match(offlineURL);
+
+  }
+
+}
+
 
 // application fetch network data
 self.addEventListener('fetch', event => {
