@@ -1,9 +1,12 @@
 // configuration
 'use strict';
 
-var CACHE = '3ti-work';
-var filesToCache = [
-	'/',
+const
+  version = '3Ti',
+  CACHE = version + '::PWAsite',
+  offlineURL = '/offline/',
+  installFilesEssential = [
+    '/',
 	'/index.html',
 	'/css/agency.min.css',
 	'/css/agency.css',
@@ -13,7 +16,14 @@ var filesToCache = [
 	'/js/agency.min.js',
 	'/js/contact_me.js',
 	'/js/jqBootstrapValidation.js'
-];
+  ].concat(offlineURL),
+  installFilesDesirable = [
+    '/favicon.ico',
+    '/images/logo/logo016.png',
+    '/images/hero/power-pv.jpg',
+    '/images/hero/power-lo.jpg',
+    '/images/hero/power-hi.jpg'
+  ];
 
 // install static assets
 function installStaticFiles() {
