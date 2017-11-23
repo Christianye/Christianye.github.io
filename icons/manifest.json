@@ -1,11 +1,5 @@
 {
- "name": "3Ti-Test",
-  "short_name": "3TiT",
-  "lang": "zh-CN",
-  "start_url": "/",
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone",
+ "name": "App",
  "icons": [
   {
    "src": "\/android-icon-36x36.png",
