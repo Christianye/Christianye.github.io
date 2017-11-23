@@ -1,7 +1,7 @@
 {
-  "name"              : "PWA Website",
+  "name"              : "PWA 3Ti",
   "short_name"        : "PWA",
-  "description"       : "An example website implementing Progressive Web App technology.",
+  "description"       : "Progressive Web App",
   "start_url"         : "/",
   "display"           : "standalone",
   "orientation"       : "any",
